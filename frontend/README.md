@@ -48,7 +48,7 @@ This installs:
 ## **Step 3: Configure Environment Variables**  
 Create a `.env.local` file in the `frontend/` directory:  
 ```sh
-touch .env.local
+touch .env
 ```
 Open `.env.local` and set the backend API URL:  
 ```env
