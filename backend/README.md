@@ -23,6 +23,16 @@ Before setting up the backend, ensure you have the following installed:
   sudo apt install mysql-client -y
   ```
 
+- **Test MySQL Connect (or MariaDB)**  
+  ```sh
+  mysql -h <your-mysql-server>.mysql.database.azure.com \
+      -u <your-mysql-admin>@<your-mysql-server> \
+      -p
+  ```
+Replace <your-mysql-server> with your Azure MySQL server name.
+Replace <your-mysql-admin> with your MySQL admin username.
+Enter your password when prompted.
+
 - **Postman (Optional, for API testing)**  
   Download: [Postman](https://www.postman.com/)
 
