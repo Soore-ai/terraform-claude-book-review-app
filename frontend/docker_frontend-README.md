@@ -1,23 +1,34 @@
-### **Dockerizing the Frontend (Next.js App)**
+## **Updated Guide: Dockerizing Next.js Frontend Without Nginx (Including `.env` Configuration)**
 
-Now that the backend is running inside Docker, let's **Dockerize the frontend**.
+This guide will help you **Dockerize and deploy your Next.js frontend** using a **standalone Node.js server** (without Nginx) and includes **.env file configuration**.
 
 ---
 
-## **Step 1: Create `Dockerfile` for Frontend**
-Inside the **frontend** folder, create a file named **`Dockerfile`**:
-```sh
-cd ~/book-review-app/frontend
-touch Dockerfile
-nano Dockerfile
+## **1. Update `.env` File**
+Before building the Docker image, create a `.env.production` file inside the **frontend** folder:
+
+```env
+# API URL for Production
+NEXT_PUBLIC_API_URL=http://<YOUR_BACKEND_SERVER_IP>:3001
 ```
 
-### **Dockerfile Content**
-```Dockerfile
-# Use Node.js as the base image for building
+### **Explanation:**
+- `NEXT_PUBLIC_API_URL` → The **backend API URL** the frontend should call.
+- **For local testing:** Use `http://localhost:3001`
+- **For remote deployment (Azure VM, AWS, etc.):** Use the public IP of the backend server.
+
+Ensure that `.env.production` is included in the build process.
+
+---
+
+## **2. Create a Dockerfile**
+Inside the **frontend** folder, create a `Dockerfile`:
+
+```dockerfile
+# Step 1: Use Node.js as the base image for building
 FROM node:18 AS builder
 
-# Set working directory
+# Set the working directory inside the container
 WORKDIR /app
 
 # Copy package.json and package-lock.json
@@ -29,22 +40,25 @@ RUN npm install
 # Copy the rest of the application files
 COPY . .
 
-# Build the Next.js application
+# Set environment variables for production
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+
+# Build the Next.js application using the production .env file
 RUN npm run build
 
-# Use a minimal Node.js runtime for serving the Next.js app
+# Step 2: Use a minimal Node.js runtime for running the Next.js server
 FROM node:18 AS runner
 
 # Set working directory inside the container
 WORKDIR /app
 
-# Copy the built Next.js files
+# Copy built application files
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./package.json
 
-# Set environment variable for production
+# Set environment variables for production
 ENV NODE_ENV=production
 ENV PORT=3000
 
@@ -57,155 +71,99 @@ CMD ["npm", "run", "start"]
 
 ---
 
-## **Step 2: Create `nginx.conf` for Reverse Proxy** 
+## **3. Build the Docker Image**
+Run the following command inside the **frontend** folder:
 
-**(NOT TESTED)**
-
-To serve the Next.js app properly, create an **`nginx.conf`** file:
 ```sh
-nano nginx.conf
+docker build --build-arg NEXT_PUBLIC_API_URL=http://<YOUR_BACKEND_SERVER_IP>:3001 -t book-review-frontend .
 ```
 
-### **nginx.conf Content**
-```nginx
-server {
-    listen 80;
-    server_name _;
-
-    location / {
-        root /usr/share/nginx/html;
-        index index.html;
-        try_files $uri /index.html;
-    }
-
-    location /api/ {
-        proxy_pass http://backend-container:3001/;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    error_page 404 /index.html;
-}
-```
+### **Explanation:**
+- `--build-arg NEXT_PUBLIC_API_URL=http://<YOUR_BACKEND_SERVER_IP>:3001` → Passes the **backend API URL** as a build argument.
 
 ---
 
-## **Step 3: Create `.dockerignore`**
-To **optimize the build process**, create a `.dockerignore` file:
-```sh
-nano .dockerignore
-```
+## **4. Run the Frontend Container**
+Once the build completes, run the container:
 
-### **Content of `.dockerignore`**
-```
-node_modules
-.next
-out
-npm-debug.log
-.DS_Store
-.env
-```
-
----
-
-## **Step 4: Build the Frontend Image**
-Run the following command to **build the frontend image**:
-```sh
-docker build -t book-review-frontend .
-```
-
-Verify the image was created:
-```sh
-docker images
-```
-Expected output:
-```
-REPOSITORY             TAG       IMAGE ID       CREATED        SIZE
-book-review-frontend   latest    xxxxxxxxxxxx   xx seconds ago   150MB
-```
-
----
-
-## **Step 5: Run Frontend Container**
-Now, run the frontend container:
 ```sh
 docker run -d \
   --name frontend-container \
   -p 3000:3000 \
-  --network host \
+  -e NEXT_PUBLIC_API_URL=http://<YOUR_BACKEND_SERVER_IP>:3001 \
   book-review-frontend
 ```
 
-### **Explanation**
-- `-d`: Runs the container in **detached mode**.
-- `--name frontend-container`: Names the container.
-- `-p 80:80`: Maps port **80** inside Docker to **80** on the host.
-- `--network host`: Uses **host network**.
+### **Explanation:**
+- `-e NEXT_PUBLIC_API_URL=http://<YOUR_BACKEND_SERVER_IP>:3001` → Ensures the container uses the correct backend API URL.
 
 ---
 
-## **Step 6: Verify Frontend is Running**
-Check running containers:
+## **5. Verify the Running Container**
+Check if the container is running:
 ```sh
 docker ps
 ```
-You should see:
+Expected output:
 ```
 CONTAINER ID   IMAGE                 PORTS                    NAMES
-xxxxxxxxxxxx   book-review-frontend   0.0.0.0:80->80/tcp       frontend-container
-```
-
-Check logs:
-```sh
-docker logs frontend-container
+xxxxxxxxxxxx   book-review-frontend   0.0.0.0:3000->3000/tcp   frontend-container
 ```
 
 ---
 
-## **Step 7: Test the Application**
-Now, open your browser and go to:
+## **6. Test the Frontend**
+### **Access the Application**
+- **For local testing:**
 ```
-http://<YOUR_SERVER_PUBLIC_IP>
+http://localhost:3000
 ```
-
-### **Test Backend API from Frontend**
-If the backend is running on `http://<YOUR_SERVER_PUBLIC_IP>:3001`, update the `.env` file:
-```sh
-nano .env.local
+- **For remote deployment (Azure, AWS, etc.):**
 ```
-Set the **API URL**:
-```
-NEXT_PUBLIC_API_URL=http://<YOUR_SERVER_PUBLIC_IP>:3001
-```
-
-Then restart the frontend container:
-```sh
-docker stop frontend-container
-docker rm frontend-container
-docker run -d \
-  --name frontend-container \
-  -p 80:80 \
-  --network host \
-  book-review-frontend
+http://<YOUR_FRONTEND_SERVER_IP>:3000
 ```
 
 ---
 
-## **Step 8: Restart & Stop Containers**
-To restart the frontend:
-```sh
-docker restart frontend-container
-```
-
-To stop the frontend:
+## **7. Stopping and Removing the Container**
+To stop the running container:
 ```sh
 docker stop frontend-container
 ```
-
-To remove the frontend container:
+To remove the container:
 ```sh
 docker rm frontend-container
 ```
+
+---
+
+## **8. Rebuilding and Restarting the Frontend**
+Whenever you make changes to the frontend:
+```sh
+docker build --build-arg NEXT_PUBLIC_API_URL=http://<YOUR_BACKEND_SERVER_IP>:3001 -t book-review-frontend .
+docker run -d -p 3000:3000 --name frontend-container -e NEXT_PUBLIC_API_URL=http://<YOUR_BACKEND_SERVER_IP>:3001 book-review-frontend
+```
+
+---
+
+## **9. Updating `.gitignore` for Docker**
+Ensure `.gitignore` includes:
+
+```
+node_modules
+.next
+.env
+.env.local
+.env.production
+Dockerfile
+docker-compose.yml
+```
+
+---
+
+### **Summary**
+✅ **Updated `.env` file configuration**  
+✅ **Pass environment variables correctly** during **build** and **run**  
+✅ **No need for Nginx**, Next.js runs on **port 3000**  
+✅ **Easy deployment and testing**  
 
