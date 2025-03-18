@@ -49,7 +49,7 @@ Before setting up the backend, ensure you have the following installed:
 
 ## **Step 1: Clone the Repository**
 ```sh
-git clone https://github.com/your-username/book-review-app.git
+[git clone https://github.com/your-username/book-review-app.git](https://github.com/pravinmishraaws/book-review-app.git)
 cd book-review-app/backend
 ```
 
