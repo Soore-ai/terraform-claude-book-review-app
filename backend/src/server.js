@@ -10,9 +10,21 @@ app.use(express.json());
 const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(",") : ["http://localhost:3000"];
 
 app.use(cors({
-  origin: allowedOrigins,
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true); // Allow requests from valid origins
+    } else {
+      callback(new Error("CORS policy: Not allowed by server"));
+    }
+  },
   credentials: true,
 }));
+
+// Debugging: Log incoming requests
+app.use((req, res, next) => {
+  console.log(`🛠 Incoming request from: ${req.headers.origin}`);
+  next();
+});
 
 async function startServer() {
   try {
