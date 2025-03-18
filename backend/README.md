@@ -26,7 +26,7 @@ Before setting up the backend, ensure you have the following installed:
 - **Test MySQL Connect (or MariaDB)**  
   ```sh
   mysql -h <your-mysql-server>.mysql.database.azure.com \
-      -u <your-mysql-admin>@<your-mysql-server> \
+      -u <your-mysql-admin> \
       -p
   ```
 Replace <your-mysql-server> with your Azure MySQL server name.
