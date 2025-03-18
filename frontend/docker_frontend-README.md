@@ -32,31 +32,35 @@ COPY . .
 # Build the Next.js application
 RUN npm run build
 
-# Use Nginx for serving static files in production
-FROM nginx:latest AS runner
+# Use a minimal Node.js runtime for serving the Next.js app
+FROM node:18 AS runner
 
-# Set working directory in Nginx container
-WORKDIR /usr/share/nginx/html
+# Set working directory inside the container
+WORKDIR /app
 
-# Remove the default Nginx static assets
-RUN rm -rf ./*
+# Copy the built Next.js files
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/package.json ./package.json
 
-# Copy built Next.js app from builder
-COPY --from=builder /app/out .
+# Set environment variable for production
+ENV NODE_ENV=production
+ENV PORT=3000
 
-# Copy Nginx configuration file
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Expose the application port
+EXPOSE 3000
 
-# Expose the default Nginx port
-EXPOSE 80
-
-# Start Nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Start the Next.js server
+CMD ["npm", "run", "start"]
 ```
 
 ---
 
-## **Step 2: Create `nginx.conf` for Reverse Proxy**
+## **Step 2: Create `nginx.conf` for Reverse Proxy** 
+
+**(NOT TESTED)**
+
 To serve the Next.js app properly, create an **`nginx.conf`** file:
 ```sh
 nano nginx.conf
@@ -129,7 +133,7 @@ Now, run the frontend container:
 ```sh
 docker run -d \
   --name frontend-container \
-  -p 80:80 \
+  -p 3000:3000 \
   --network host \
   book-review-frontend
 ```
