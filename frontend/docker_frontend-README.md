@@ -75,11 +75,8 @@ CMD ["npm", "run", "start"]
 Run the following command inside the **frontend** folder:
 
 ```sh
-docker build --build-arg NEXT_PUBLIC_API_URL=http://<YOUR_BACKEND_SERVER_IP>:3001 -t book-review-frontend .
+docker build -t book-review-frontend .
 ```
-
-### **Explanation:**
-- `--build-arg NEXT_PUBLIC_API_URL=http://<YOUR_BACKEND_SERVER_IP>:3001` → Passes the **backend API URL** as a build argument.
 
 ---
 
@@ -90,7 +87,7 @@ Once the build completes, run the container:
 docker run -d \
   --name frontend-container \
   -p 3000:3000 \
-  -e NEXT_PUBLIC_API_URL=http://<YOUR_BACKEND_SERVER_IP>:3001 \
+  --network host \
   book-review-frontend
 ```
 
