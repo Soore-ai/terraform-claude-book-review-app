@@ -1,9 +1,3 @@
-### **Backend README for Book Review App**
-
-Here is a complete **README for the backend**, including prerequisites, setup instructions, API testing, and everything necessary to get it running.
-
----
-
 ## **Book Review App - Backend**
 This is the backend for the **Book Review App**, built with **Node.js, Express.js, and MySQL**. It provides APIs for **user authentication, book management, and reviews**.
 
