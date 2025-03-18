@@ -17,7 +17,7 @@ export default function Login() {
 
     try {
       const data = await loginUser({ email, password });
-      login(data.token); // Update user state globally
+      login(data.token, data.user); // Pass token & user info to context
       router.push("/");
     } catch (err) {
       setError(err.message || "Login failed");
