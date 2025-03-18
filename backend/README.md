@@ -17,6 +17,12 @@ Before setting up the backend, ensure you have the following installed:
   ```sh
   mysql --version
   ```
+- **MySQL Client (or MariaDB)**  
+  ```sh
+  sudo apt update
+  sudo apt install mysql-client -y
+  ```
+
 - **Postman (Optional, for API testing)**  
   Download: [Postman](https://www.postman.com/)
 
