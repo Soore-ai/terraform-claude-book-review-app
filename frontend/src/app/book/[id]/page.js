@@ -34,11 +34,13 @@ export default function BookDetails() {
 
     try {
       const token = localStorage.getItem("token");
-      await axios.post("http://localhost:3001/api/reviews", 
-        { bookId: id, comment: newReview, rating }, 
+      const response = await axios.post(
+        "http://localhost:3001/api/reviews",
+        { bookId: id, comment: newReview, rating },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setReviews([...reviews, { comment: newReview, rating }]);
+
+      setReviews([response.data.review, ...reviews]); // Add new review to list
       setNewReview("");
     } catch (error) {
       setError(error.response?.data?.message || "Failed to submit review.");
@@ -60,8 +62,12 @@ export default function BookDetails() {
         <ul className="mt-2">
           {reviews.map((review, index) => (
             <li key={index} className="border p-2 my-2 rounded">
+              <p className="font-bold">{review.username}</p>
               <p>{review.comment}</p>
               <p className="text-sm">⭐ {review.rating}/5</p>
+              <p className="text-xs text-gray-500">
+                {new Date(review.createdAt).toLocaleString()}
+              </p>
             </li>
           ))}
         </ul>

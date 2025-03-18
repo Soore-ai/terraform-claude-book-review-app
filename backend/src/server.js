@@ -9,7 +9,7 @@ app.use(cors());
 
 async function startServer() {
   try {
-    // Initialize database and get Sequelize instance
+    // Initialize database
     const sequelize = await initializeDatabase();
 
     // Load models
@@ -17,9 +17,22 @@ async function startServer() {
     const Book = require("./models/Book")(sequelize);
     const Review = require("./models/Review")(sequelize);
 
-    // Sync models (Creates tables if they don't exist)
-    await sequelize.sync({ alter: true });
-    console.log("Tables created!");
+    // Sync database in the correct order (Users -> Books -> Reviews)
+    await User.sync({ alter: true });
+    await Book.sync({ alter: true });
+    await Review.sync({ alter: true });
+
+    console.log("✅ Database schema updated successfully!");
+
+    // Insert sample users if table is empty
+    const userCount = await User.count();
+    if (userCount === 0) {
+      await User.bulkCreate([
+        { name: "John Doe", email: "john@example.com", password: "hashedpassword123" },
+        { name: "Alice Smith", email: "alice@example.com", password: "hashedpassword456" }
+      ]);
+      console.log("👤 Sample users added!");
+    }
 
     // Insert sample books if table is empty
     const bookCount = await Book.count();
@@ -29,29 +42,39 @@ async function startServer() {
         { title: "Clean Code", author: "Robert C. Martin", rating: 4.7 },
         { title: "JavaScript: The Good Parts", author: "Douglas Crockford", rating: 4.5 },
       ]);
-      console.log("Sample books added!");
+      console.log("📚 Sample books added!");
     }
 
-    // Load routes (AFTER Sequelize is initialized)
+    // Insert sample reviews if table is empty
+    const reviewCount = await Review.count();
+    if (reviewCount === 0) {
+      await Review.bulkCreate([
+        { userId: 1, bookId: 1, comment: "Fantastic book!", rating: 5, username: "John Doe" },
+        { userId: 2, bookId: 2, comment: "Very insightful.", rating: 4, username: "Alice Smith" },
+      ]);
+      console.log("✍️ Sample reviews added!");
+    }
+
+    // Load routes
     const userRoutes = require("./routes/userRoutes")(sequelize);
-    const reviewRoutes = require("./routes/reviewRoutes")(sequelize);
     const bookRoutes = require("./routes/bookRoutes")(sequelize);
+    const reviewRoutes = require("./routes/reviewRoutes")(sequelize);
 
     // Register API routes
     app.use("/api/users", userRoutes);
-    app.use("/api/reviews", reviewRoutes);
     app.use("/api/books", bookRoutes);
+    app.use("/api/reviews", reviewRoutes);
 
-    // Health check endpoint
+    // Health check route
     app.get("/", (req, res) => {
-      res.send("Book Review API is running...");
+      res.send("📚 Book Review API is running...");
     });
 
     // Start the server
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
   } catch (error) {
-    console.error("Server startup failed:", error);
+    console.error("❌ Server startup failed:", error);
   }
 }
 
