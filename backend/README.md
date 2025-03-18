@@ -77,6 +77,23 @@ CREATE DATABASE book_review_db;
 EXIT;
 ```
 
+### **Configuring CORS**
+To control **which frontend domains** can access the backend, set `ALLOWED_ORIGINS` in `.env`:
+
+```env
+# Allow multiple frontend URLs (comma-separated)
+ALLOWED_ORIGINS=https://your-frontend.com,http://localhost:3000
+```
+
+If deploying in **different environments**, modify `ALLOWED_ORIGINS`:
+- **Development:**  
+  ```env
+  ALLOWED_ORIGINS=http://localhost:3000
+  ```
+- **Production:**  
+  ```env
+  ALLOWED_ORIGINS=https://your-frontend.com
+  ```
 ---
 
 ## **Step 5: Start the Backend Server**

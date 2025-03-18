@@ -5,7 +5,8 @@ module.exports = (sequelize) => {
   const bookController = require("../controllers/bookController")(sequelize);
 
   router.get("/", bookController.getAllBooks);
-  router.post("/", bookController.addBook); // Can be restricted to admin
-  router.get("/:id", bookController.getBookById);
+  router.get("/:id", bookController.getBookById); // Ensure this route exists
+  router.post("/", bookController.addBook);
+
   return router;
 };

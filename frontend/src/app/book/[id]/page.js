@@ -1,8 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import { fetchBookDetails, fetchReviews, submitReview } from "../../../services/api";
 import { useUser } from "../../../context/UserContext";
-import axios from "axios";
 
 export default function BookDetails() {
   const { id } = useParams();
@@ -14,13 +14,8 @@ export default function BookDetails() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    axios.get(`http://localhost:3001/api/books/${id}`)
-      .then(response => setBook(response.data))
-      .catch(error => console.error("Error fetching book:", error));
-
-    axios.get(`http://localhost:3001/api/reviews/${id}`)
-      .then(response => setReviews(response.data))
-      .catch(error => console.error("Error fetching reviews:", error));
+    fetchBookDetails(id).then(setBook).catch(err => console.error(err));
+    fetchReviews(id).then(setReviews).catch(err => console.error(err));
   }, [id]);
 
   const handleReviewSubmit = async (e) => {
@@ -34,13 +29,8 @@ export default function BookDetails() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.post(
-        "http://localhost:3001/api/reviews",
-        { bookId: id, comment: newReview, rating },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      setReviews([response.data.review, ...reviews]); // Add new review to list
+      const response = await submitReview({ bookId: id, comment: newReview, rating }, token);
+      setReviews([response.review, ...reviews]);
       setNewReview("");
     } catch (error) {
       setError(error.response?.data?.message || "Failed to submit review.");
@@ -65,9 +55,6 @@ export default function BookDetails() {
               <p className="font-bold">{review.username}</p>
               <p>{review.comment}</p>
               <p className="text-sm">⭐ {review.rating}/5</p>
-              <p className="text-xs text-gray-500">
-                {new Date(review.createdAt).toLocaleString()}
-              </p>
             </li>
           ))}
         </ul>

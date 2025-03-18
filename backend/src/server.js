@@ -5,7 +5,14 @@ const initializeDatabase = require("./config/db");
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+
+// Read allowed origins from environment variables
+const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(",") : ["http://localhost:3000"];
+
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true,
+}));
 
 async function startServer() {
   try {
