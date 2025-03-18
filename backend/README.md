@@ -29,9 +29,18 @@ Before setting up the backend, ensure you have the following installed:
       -u <your-mysql-admin> \
       -p
   ```
-Replace <your-mysql-server> with your Azure MySQL server name.
-Replace <your-mysql-admin> with your MySQL admin username.
-Enter your password when prompted.
+  Replace <your-mysql-server> with your Azure MySQL server name.
+  Replace <your-mysql-admin> with your MySQL admin username.
+  Enter your password when prompted.
+
+**Manually Create the Database**  
+ Once inside the MySQL shell, run:
+
+  ```sh
+  CREATE DATABASE book_review_db;
+  SHOW DATABASES;
+  ```
+✅ Now your database exists, and Sequelize can create tables inside it.
 
 - **Postman (Optional, for API testing)**  
   Download: [Postman](https://www.postman.com/)
