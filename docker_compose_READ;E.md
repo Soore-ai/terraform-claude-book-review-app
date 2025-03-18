@@ -8,7 +8,7 @@ Inside the **root directory** of your project (same level as `frontend/` and `ba
 ```sh
 cd ~/book-review-app
 touch docker-compose.yml
-nano docker-compose.yml
+vi docker-compose.yml
 ```
 
 ### **Content of `docker-compose.yml`**
