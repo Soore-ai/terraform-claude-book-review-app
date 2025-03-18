@@ -5,7 +5,7 @@ This guide will help you **Dockerize and deploy your Next.js frontend** using a 
 ---
 
 ## **1. Update `.env` File**
-Before building the Docker image, create a `.env.production` file inside the **frontend** folder:
+Before building the Docker image, create a `.env` file inside the **frontend** folder:
 
 ```env
 # API URL for Production
