@@ -7,6 +7,8 @@ The application is structured into two separate components:
 1. **Frontend:** A Next.js-based UI for users to browse and review books.
 2. **Backend:** A Node.js and Express.js API that handles authentication, book management, and reviews.
 
+![Two-tiered-Web-application-architecture](https://github.com/user-attachments/assets/f8253a9c-b019-4620-9c96-09e37a04897c)
+
 This project is designed to demonstrate modern web application development with a clean separation between the frontend and backend, making it easy to deploy independently.
 
 ---
