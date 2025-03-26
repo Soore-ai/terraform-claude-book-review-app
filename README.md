@@ -1,7 +1,7 @@
 ## **Book Review App**
 
 ### **Overview**
-The **Book Review App** is a two-tier web application that allows users to browse books, read reviews, and submit their own reviews. Users can register and log in to post reviews, while unauthenticated users can only view book details and existing reviews.
+The **Book Review App** is a three-tier web application that allows users to browse books, read reviews, and submit their own reviews. Users can register and log in to post reviews, while unauthenticated users can only view book details and existing reviews.
 
 The application is structured into two separate components:
 1. **Frontend:** A Next.js-based UI for users to browse and review books.
