@@ -7,7 +7,7 @@
 - **Unauthenticated users** can view book details and existing reviews.
 - **Authenticated users** can register, log in, and submit reviews.
 
-This project is part of the **DevOps Zero to Hero** Udemy course and designed to help students practice DevOps tools and cloud infrastructure end-to-end.
+This project is part of the **[DevOps Zero to Hero: Docker, K8s, Cloud, CI/CD & 4 Projects](https://www.udemy.com/user/pravin-mishra-30/)** Udemy course and designed to help students practice DevOps tools and cloud infrastructure end-to-end.
 
 ---
 
@@ -126,7 +126,7 @@ Follow the instructions to install dependencies, configure environment variables
 
 ## About This Project
 
-This project is designed exclusively for the **Udemy course: [DevOps Zero to Hero: Docker, K8s, Cloud, CI/CD & 4 Projects](https://www.udemy.com)**.
+This project is designed exclusively for the **Udemy course: [DevOps Zero to Hero: Docker, K8s, Cloud, CI/CD & 4 Projects]([https://www.udemy.com](https://www.udemy.com/user/pravin-mishra-30/))**.
 
 Students will gain hands-on experience in:
 - Git, Docker, Kubernetes
