@@ -81,7 +81,7 @@ Open `.env` and configure the database connection:
 # Database Configuration
 DB_HOST=localhost
 DB_USER=root
-DB_PASSWORD=yourpassword
+DB_PASS=yourpassword
 DB_NAME=book_review_db
 DB_DIALECT=mysql
 
