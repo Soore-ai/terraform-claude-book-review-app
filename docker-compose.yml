@@ -1,4 +1,4 @@
-version: '3.8'
+version: '2.1'
 
 services:
   mysql:
@@ -35,7 +35,7 @@ services:
       DB_PASS: Demo12@Test23
       DB_DIALECT: mysql
       JWT_SECRET: mysecretkey
-      ALLOWED_ORIGINS: http://localhost:3000
+      ALLOWED_ORIGINS: http://<FRONTEND PUBLIC IP>:3000
     ports:
       - "3001:3001"
 
@@ -46,10 +46,9 @@ services:
     depends_on:
       - backend
     environment:
-      NEXT_PUBLIC_API_URL: http://backend:3001/api
+      NEXT_PUBLIC_API_URL: http://<BACKEND PUBLIC IP>:3001
     ports:
       - "3000:3000"
 
 volumes:
   mysql_data:
-
