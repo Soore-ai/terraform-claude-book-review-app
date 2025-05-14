@@ -26,7 +26,7 @@ services:
     restart: always
     depends_on:
       mysql:
-        - condition: service_healthy
+        condition: service_healthy
     environment:
       PORT: 3001
       DB_HOST: mysql
