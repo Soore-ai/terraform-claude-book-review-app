@@ -5,6 +5,11 @@ services:
     image: mysql:8.0
     container_name: mysql_container
     restart: always
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     environment:
       MYSQL_ROOT_PASSWORD: my-secret-pw
       MYSQL_DATABASE: book_review_db
@@ -20,7 +25,8 @@ services:
     container_name: backend_container
     restart: always
     depends_on:
-      - mysql
+      mysql:
+        - condition: service_healthy
     environment:
       PORT: 3001
       DB_HOST: mysql
