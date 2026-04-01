@@ -4,7 +4,7 @@ A production-style three-tier web application deployed on AWS using Terraform. T
 
 > **Infrastructure by:** Ed Eguaikhide  
 > **Portfolio:** [sites.google.com/view/edeguaikhide](https://sites.google.com/view/edeguaikhide)  
-> **Writeup:** [View on Medium](#) *(link to your Medium post)*
+> **Writeup:** [View on Medium] (https://medium.com/@eguaikhidee/i-deployed-a-three-tier-app-on-aws-with-terraform-heres-what-actually-broke-be34184f22d7)
 
 ---
 
@@ -204,5 +204,5 @@ terraform destroy
 
 - 📄 [Full Deployment Guide](./deployment-guide.md)
 - 🌐 [Portfolio Writeup](https://sites.google.com/view/edeguaikhide/projects)
-- ✍️ [Medium Blog Post](#)
+- ✍️ [Medium Blog Post](https://medium.com/@eguaikhidee/i-deployed-a-three-tier-app-on-aws-with-terraform-heres-what-actually-broke-be34184f22d7)
 - 💼 [LinkedIn](https://linkedin.com/in/ed-eguaikhide)
