@@ -1,140 +1,208 @@
-# Book Review App
+# Three-Tier Book Review App — AWS Infrastructure Deployment
 
-## Overview
+A production-style three-tier web application deployed on AWS using Terraform. This project demonstrates end-to-end cloud infrastructure design — from custom VPC architecture to multi-AZ database replication — with a focus on security, high availability, and infrastructure as code.
 
-**Book Review App** is a modern, full-stack **three-tier web application** that allows users to browse books, read reviews, and submit their own. It demonstrates clean separation of concerns between frontend and backend, and is ideal for hands-on DevOps and cloud deployment practices.
-
-- **Unauthenticated users** can view book details and existing reviews.
-- **Authenticated users** can register, log in, and submit reviews.
-
-This project is part of the **[DevOps Zero to Hero: Docker, K8s, Cloud, CI/CD & 4 Projects](https://www.udemy.com/user/pravin-mishra-30/)** Udemy course and designed to help students practice DevOps tools and cloud infrastructure end-to-end.
+> **Infrastructure by:** Ed Eguaikhide  
+> **Portfolio:** [sites.google.com/view/edeguaikhide](https://sites.google.com/view/edeguaikhide)  
+> **Writeup:** [View on Medium](#) *(link to your Medium post)*
 
 ---
 
-## Architecture
+## Architecture Overview
 
-- **Frontend**: Built using **Next.js**, providing server-side rendering and dynamic routing.
-- **Backend**: Powered by **Node.js** and **Express.js**, handling authentication, book data, and reviews.
-- **Database**: Uses **MySQL** with Sequelize ORM.
-  
-This three-tier architecture can be independently deployed, making it ideal for containerization, cloud hosting, and CI/CD implementation.
+![Architecture Diagram](./architecture/book-review-app-architecture.png)
 
-![Two-tiered-Web-application-architecture](https://github.com/user-attachments/assets/0be7ab58-91d0-4cde-9272-1c74ca783b4c)
+The application is deployed across **two Availability Zones** in a custom VPC, with three fully isolated tiers:
 
+| Tier | Layer | Resources |
+|---|---|---|
+| Web | Public Subnets (10.0.1.0/24, 10.0.2.0/24) | EC2 (Next.js + Nginx), Public ALB |
+| App | Private Subnets (10.0.3.0/24, 10.0.4.0/24) | EC2 (Node.js :3001), Internal ALB |
+| DB | Private Subnets (10.0.5.0/24, 10.0.6.0/24) | RDS MySQL (Multi-AZ + Read Replica) |
 
----
-
-## Features
-
-### 🔐 User Authentication
-- User registration and login
-- Email and password-based login
-- Secure authentication using JWT tokens
-
-### 📚 Book Management
-- View all books
-- Fetch detailed info for each book
-- (Future enhancement: Admins can add/edit books)
-
-### 📝 Review System
-- View reviews for each book
-- Authenticated users can post reviews
-- Each review includes rating, username, and timestamp
-
-### 🔄 State Management & API Integration
-- Frontend dynamically interacts with backend APIs
-- React Context manages global authentication state
-
----
-
-## Technology Stack
-
-### Frontend
-- [Next.js](https://nextjs.org/) – React framework for SSR and routing  
-- Tailwind CSS – Utility-first CSS framework  
-- Axios – HTTP client for API calls  
-- React Context API – For managing global auth state  
-
-### Backend
-- Node.js & Express.js – REST API development  
-- MySQL & Sequelize – Relational DB and ORM  
-- JWT – Token-based authentication  
-- bcrypt.js – Password hashing  
-- CORS – Cross-origin request handling  
-
----
-
-## Application Structure
-
+**Traffic flow:**
 ```
-/book-review-app
- ├── /frontend   # Next.js frontend
- ├── /backend    # Node.js & Express backend
- └── README.md   # Project overview
+Users → Internet Gateway → Public ALB → Web EC2 (Nginx → Next.js)
+                                              ↓
+                                        Internal ALB → App EC2 (Node.js)
+                                                             ↓
+                                                       RDS MySQL (Primary)
+                                                             ↓
+                                                    RDS Read Replica (standby)
 ```
 
 ---
 
-## Frontend Directory Layout
+## Infrastructure Built
+
+- **VPC** — Custom `10.0.0.0/16` with 6 subnets across 2 AZs
+- **Internet Gateway** — Public traffic entry point
+- **NAT Gateway** — Allows private subnets to reach the internet for updates without public exposure
+- **2 Application Load Balancers** — Public ALB (web tier) + Internal ALB (app tier)
+- **4 EC2 Instances** — 2 web + 2 app, spread across AZs for redundancy
+- **5 Security Groups** — Enforcing strict tier-to-tier access controls
+- **RDS MySQL Multi-AZ** — Primary with automatic failover
+- **RDS Read Replica** — Separate read endpoint for scalability
+- **Route Tables** — Public and private routing with proper associations
+
+**Total resources provisioned via Terraform: 33**
+
+---
+
+## Security Design
+
+Security group rules enforce strict least-privilege access between tiers:
 
 ```
-/frontend
- ├── /src
- │   ├── /app
- │   │   ├── page.js          # Home page (list of books)
- │   │   ├── /book/[id]       # Dynamic route for book details
- │   │   ├── /login           # Login page
- │   │   ├── /register        # Register page
- │   ├── /components          # Reusable UI components (Navbar, etc.)
- │   ├── /context             # React Context for auth state
- │   ├── /services            # Axios API functions
- │   ├── /styles              # Tailwind global styles
- ├── next.config.js           # Next.js config
- ├── package.json             # Dependencies and scripts
- └── README.md                # Frontend-specific docs
+Public ALB     → Web EC2     : HTTP port 80 only
+Web EC2        → Internal ALB: port 3001 only
+Internal ALB   → App EC2     : port 3001 only
+App EC2        → RDS MySQL   : port 3306 only
+
+Web EC2 → RDS : BLOCKED (verified via connection timeout test)
+Internet → Internal ALB : BLOCKED (internal-only DNS)
+RDS : not publicly accessible
+App EC2 : no public IP assigned
+```
+
+Security was validated by:
+- Confirming app tier targets were reachable only through the internal ALB
+- Verifying the RDS endpoint timed out from the web tier
+- Confirming the internal ALB DNS was unreachable from the public internet
+
+---
+
+## Tech Stack
+
+**Application**
+- Frontend: Next.js, Tailwind CSS, Axios, React Context API
+- Backend: Node.js, Express.js, Sequelize ORM
+- Database: MySQL
+
+**Infrastructure**
+- IaC: Terraform (33 resources)
+- Compute: AWS EC2 (Ubuntu, t3.micro)
+- Networking: VPC, ALB, IGW, NAT Gateway, Route Tables, Security Groups
+- Database: Amazon RDS MySQL (Multi-AZ + Read Replica)
+- Process Management: PM2 (Node.js backend)
+- Web Server: Nginx (reverse proxy)
+
+---
+
+## Project Structure
+
+```
+book-review-app/
+├── frontend/               # Next.js frontend application
+│   ├── src/
+│   │   ├── app/            # Pages (home, book detail, login, register)
+│   │   ├── components/     # Reusable UI components
+│   │   ├── context/        # React auth state management
+│   │   └── services/       # Axios API functions
+│   └── package.json
+├── backend/                # Node.js + Express API
+│   ├── src/
+│   │   ├── config/         # Database connection
+│   │   ├── models/         # Sequelize models (User, Book, Review)
+│   │   ├── routes/         # Express route handlers
+│   │   ├── controllers/    # Business logic
+│   │   └── middleware/     # JWT auth middleware
+│   └── package.json
+├── terraform/              # All infrastructure code
+│   ├── main.tf
+│   ├── variables.tf
+│   ├── outputs.tf
+│   ├── terraform.tfvars    # Your values (DO NOT COMMIT)
+│   └── modules/
+│       ├── vpc/
+│       ├── security-groups/
+│       ├── alb/
+│       ├── ec2/
+│       └── rds/
+└── README.md
 ```
 
 ---
 
-## Backend Directory Layout
+## Deploying This Yourself
+
+### Prerequisites
+
+- AWS CLI configured (`aws sts get-caller-identity`)
+- Terraform v1.5.0+
+- An EC2 key pair in your target region
+- Your public IP (`curl -s ifconfig.me`)
+
+### Steps
+
+```bash
+# 1. Clone the repo
+git clone https://github.com/Soore-ai/book-review-app.git
+cd book-review-app/terraform
+
+# 2. Configure your variables
+cp terraform.tfvars.example terraform.tfvars
+nano terraform.tfvars   # Fill in your region, IP, key pair, DB credentials
+
+# 3. Generate a JWT secret
+openssl rand -base64 32
+
+# 4. Initialize and validate
+terraform init
+terraform validate
+
+# 5. Review the plan (~33 resources)
+terraform plan -out=tfplan
+
+# 6. Apply (takes 10-15 min — RDS Multi-AZ provisioning is slow)
+terraform apply tfplan
+
+# 7. Wait 5-8 minutes for EC2 bootstrapping, then open the app
+http://<public_alb_dns>
+```
+
+> ⚠️ **Cost Warning:** This infrastructure runs approximately $5–8/day on AWS free tier ineligible resources. Run `terraform destroy` when done.
+
+### Key Outputs After Apply
 
 ```
-/backend
- ├── /src
- │   ├── /config              # Database config and connection
- │   ├── /models              # Sequelize models (User, Book, Review)
- │   ├── /routes              # Express route handlers
- │   ├── /controllers         # API business logic
- │   ├── /middleware          # JWT auth middleware
- │   └── server.js            # Entry point of the backend server
- ├── package.json             # Dependencies and scripts
- └── README.md                # Backend-specific docs
+public_alb_dns          → Your app URL
+internal_alb_dns        → Internal backend endpoint
+rds_endpoint            → Primary DB connection string
+rds_read_replica_endpoint → Read replica endpoint
+web_instance_public_ips → For SSH access
 ```
 
 ---
 
-## Setup Instructions
+## What I Learned Building This
 
-Setup steps for both frontend and backend are provided in their respective folders:
+**Infrastructure design decisions:**
+- Why the app tier has no public IPs — any instance in a private subnet reachable only through the internal ALB cannot be directly attacked from the internet, even if a security group rule were misconfigured
+- Why the read replica matters — not just for reads, but as a warm standby that can be promoted faster than restoring from a snapshot
 
-- [`/frontend/README.md`](./frontend/README.md)
-- [`/backend/README.md`](./backend/README.md)
+**Debugging real issues:**
+- Targets stuck in "unhealthy" — traced to a bootstrap timing issue where the ALB health check fired before PM2 had started the Node.js process; solved by checking `/var/log/userdata.log` and adjusting the health check grace period
+- CORS errors — the backend `ALLOWED_ORIGINS` env var had a trailing slash that didn't match the ALB DNS; fixed by stripping the slash
 
-Follow the instructions to install dependencies, configure environment variables, and start the application locally.
+**Terraform specifics:**
+- Resource dependency ordering matters — security groups must exist before EC2 instances; Terraform's implicit dependency graph handles most of this, but explicit `depends_on` was needed for the NAT Gateway before private subnet route tables
 
 ---
 
-## About This Project
+## Teardown
 
-This project is designed exclusively for the **Udemy course: [DevOps Zero to Hero: Docker, K8s, Cloud, CI/CD & 4 Projects]([https://www.udemy.com](https://www.udemy.com/user/pravin-mishra-30/))**.
+```bash
+terraform destroy
+# Type 'yes' when prompted
+# Expected: 33 resources destroyed (~5-10 minutes)
+```
 
-Students will gain hands-on experience in:
-- Git, Docker, Kubernetes
-- Terraform, Ansible
-- CI/CD Pipelines
-- AWS & Azure Cloud
-- Full-stack project deployment from scratch
+---
 
-This Book Review App serves as one of the **4 real-world DevOps projects** taught in the course.
+## Related
 
-#### Testing CICD Pipeline
+- 📄 [Full Deployment Guide](./deployment-guide.md)
+- 🌐 [Portfolio Writeup](https://sites.google.com/view/edeguaikhide/projects)
+- ✍️ [Medium Blog Post](#)
+- 💼 [LinkedIn](https://linkedin.com/in/ed-eguaikhide)
